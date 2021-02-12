@@ -85,7 +85,7 @@ In general the algorithm I'm proposing in as follows:
  If recovery was partially successful add recovered edges.
 \end{enumerate}
 \subsection{Analysis}
-We have to send each edge in mutual difference at least once. 
+We have to send each edge in mutual difference at least once.
 We have to send at least $b_o = d*s_e$ bytes, where $s_e$ is size of each edge.
 
 Assuming we start with $k=0$, it can be proven that total number of IBF buckets sent won't be bigger than $6d$  (TODO Proof 1).
@@ -128,10 +128,10 @@ Let's assume Alice and Bobs are peers trying to exchange their routing tables.
 // this is Alice code, B is Bob's peeer
 // step 1
 // step 1 can be merged into one rpc
-         
+
 // ask B for number of edges he knows about
 let B_edges = B.get_num_edges();
-         
+
 // ask B about how many of my edges he knows about
 let known_b  = B.how_many_hashes_are_know(self.get_random_e_hashes(2000));
 
@@ -147,10 +147,20 @@ let e_est = B_edges  +  self.get_num_edges() - d;
 
 // step 3
 for k in 10..21 { // can be written as one round trip for every iteration
+	if self.get_num_edges() == 0 || B_edges == 0 {
+		// A sends all edges to B
+		...
+		// B sends all edges to A
+		...
+		break;
+         }
+
 	if k == 20 or (2^k) > e_est / 10 {
 		//  A sends all hashes to B, B returns all edges unknown
+		...
 		//  A asks B to give all hashes known, A gets result, A send to B all edges it needs
 		...
+		break;
 	}
 
 	// step 4
@@ -167,11 +177,11 @@ for k in 10..21 { // can be written as one round trip for every iteration
 	B.send_edges( self.get_edges_from_hashes(known_edges));
 	// ask B about unknown edges
 	let edges_from_b = B.get_edges_by_hash(unknown_edges);
-	
+
 	self.add_edges(edges_from_b);
 
 	if (success) {
-		// we are done	
+		// we are done
 		break;
 	}
 
