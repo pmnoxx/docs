@@ -1,0 +1,140 @@
+\documentclass[11pt]{article}
+    \title{\textbf{Routing Graph Reconcilation 0.0.1}}
+    \author{Piotr Mikulski}
+    \date{}
+\oddsidemargin=-0.2in
+\topmargin=-1in
+\headheight=0pt
+\textwidth=6.8in
+\usepackage{listings, listings-rust}
+\usepackage{amsmath}
+
+\usepackage{mathtools}
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Overview}
+In P2P networks, like NEAR Protocol [1], each node stores a graph of nodes and edges representing peers and connections between them.
+We will call such graph a \textbf{routing graph}. Whenever a peer joins the network or peer reconnect, they exchange their routing tables. The process of exchanging tables involves adding edges, which are present in one's peers view of the graph, but not in the others.
+For the same of simplicity we will describe only the process of adding new edges.
+
+That operation gets more expensive as \textbf{routing graph} grows larger. Exchanging full routing tables on every reconnect would be expensive and we would like to avoid it.
+
+In this article, we will discuss ways of exchanging routing tables by echanging the amount of information proportional to size of edges that need to be added.
+
+\section{Definitions}
+\subsection{Routing Graph}
+Graph, where peers are represented by nodes, and edges by connections between them.
+\subsection{Node}
+Each node is uniquely defined by it's public key.
+
+\begin{lstlisting}[language=Rust]
+pub struct PeerId {
+    /// Peer is defined by it's public key
+    public_key: PublicKey,
+}
+\end{lstlisting}
+
+\subsection{Edges}
+Each edge is defined by pair of peer ids and signatures from both peers.
+This data structure can be as large as 360 bytes in case of NEAR Protocol network. Therefore we would like to minimize the number of edges we transfer.
+\begin{lstlisting}[language=Rust]
+pub struct Edge {
+    /// Since edges are not directed `peer0 < peer1` should hold.
+    pub peer0: PeerId,
+    pub peer1: PeedId,
+    /// Signature from parties validating the edge.
+    These are signature of the added edge.
+    signature0: Signature,
+    signature1: Signature,
+    /// some other data
+    /// ...
+}
+\end{lstlisting}
+
+\subsection{IBF - Inverse Bloom Filter}
+Invertible Bloom Filter (IBF) is a type of bloom filter, which can be used to simultaneously calculate  $D_{A-B}$ and $D_{B-A}$ using $O(d)$ space.
+This data structure encodes sets in such a way that given two encodings  of two different sets, you can recover symetric difference of those two sets.
+It can be shown that given two IBF structures of size $k$, you can recover with high probability up to $(2/3)*k$ elements if $k$ big enough.
+Detailed analysis can be found at ESRwPC [4].
+
+\section{Proposed algorithm}
+
+\section{Performance results}
+
+
+\section{References}
+
+\begin{thebibliography}{9}
+\bibitem{near} 
+NEAR Protocol
+\textit{https://near.org/}
+
+\bibitem{esrwpc}
+Efficient Set Reconciliation without Prior Context. 
+\textit{https://www.ics.uci.edu/~eppstein/pubs/EppGooUye-SIGCOMM-11.pdf}
+\bibitem{minisketch}
+Minisketch: a library for BCH-based set reconciliation
+\textit{https://github.com/eupn/minisketch-rs}
+\bibitem{set_reconsilation}
+- [4] Efficient Set Reconciliation without Prior Context 
+\textit{https://www.ics.uci.edu/~eppstein/pubs/EppGooUye-SIGCOMM-11.pdf}
+
+\end{thebibliography}
+
+
+\end{document}
+
+
+- [1] https://near.org/
+
+- [2] Efficient Set Reconciliation without Prior Context. https://www.ics.uci.edu/~eppstein/pubs/EppGooUye-SIGCOMM-11.pdf
+- [3] Minisketch: a library for BCH-based set reconciliation https://github.com/eupn/minisketch-rs
+- [4] Efficient Set Reconciliation without Prior Context https://www.ics.uci.edu/~eppstein/pubs/EppGooUye-SIGCOMM-11.pdf
+
+
+
+\documentclass[12pt]{article}
+\begin{document}
+
+\section*{Notes for My Paper}
+
+
+
+\section{Contributing}
+If you'd like to contribute to this project, here's some ideas:
+\begin{description}
+\addtolength{\itemindent}{0.80cm}
+\itemsep0em 
+\item[Development] fix bugs or add features to our C/GTK codebase
+\item[Documentation] edit the user guide to improve user experience
+\item[Localization] translate Gummi in your native language
+\item[Testing] try out the latest and report your findings
+\end{description}
+Refer to the \emph{Getting Involved}\footnote{https://github.com/alexandervdm/gummi/wiki/Getting-Involved} section on our wiki for more information. 
+
+\section{What's next}
+Within the 0.8.x release series we will focus on adding minor features but mostly fixing bugs. New functionality will be integrated into the next major release. An overview of currently accepted features can be found on the 0.9.0 milestone\footnote{https://github.com/alexandervdm/gummi/milestone/3} page.
+
+\section{In closing}
+We hope you will enjoy using this release as much as we enjoyed creating it. If you have any further comments, suggestions or wish to report an issue, please visit \emph{\textbf{https://gummi.app}}. 
+
+
+# Estimation algorithms
+
+# Algorithm for Edges Reconciliation
+
+# Vulnerabilities
+
+# Results
+
+# References
+- [1] https://near.org/
+- [2] Efficient Set Reconciliation without Prior Context. https://www.ics.uci.edu/~eppstein/pubs/EppGooUye-SIGCOMM-11.pdf
+- [3] Minisketch: a library for BCH-based set reconciliation https://github.com/eupn/minisketch-rs
+- [4] Efficient Set Reconciliation without Prior Context https://www.ics.uci.edu/~eppstein/pubs/EppGooUye-SIGCOMM-11.pdf
+*/xxx
+ff
+\end{document}
+
