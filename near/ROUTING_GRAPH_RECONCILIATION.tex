@@ -10,6 +10,8 @@
 \usepackage{amsmath}
 
 \usepackage{mathtools}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
 \begin{document}
 \maketitle
 \thispagestyle{empty}
@@ -102,7 +104,7 @@ If each peer uses gnerates IBF in the same way, using the same hash function.
 It's possible for one of the following attacks to be used:
 \begin{enumerate}
 \item Hash colision of items stores in IBF -  Instead of storing whole edges directly in IBF, we can store hashes of those elements.
-If hashes aren't long enough, this allow adversarial peer to create a hash collision. 
+If hashes aren't long enough, this allow adversarial peer to create a hash collision.
 \item Set of boxes collision - Each element is added to a fixed number of boxes, it's possible to generate an edge, which gets hashed to the same set of boxes, preventing decoding of the items in that box.
 \item Signature collison - If multiple items are stores inside one box and signatures are short enough it's possible to generate such signature, where hash of items stored in box would be equal to xor of hashes of that boxes. That would cause a false positive.
 \end{enumerate}
@@ -154,7 +156,7 @@ TODO
 A few variants of estimating set differences are possible.
 \subsection{Don't do estimation}
 It's a simple and preferred approach.
-We can start with $k = 10$. It's fine to do so, because decoding $IBF$ of size $2^k$ elements takes less than 1ms, it can be represented using only 16kb. 
+We can start with $k = 10$. It's fine to do so, because decoding $IBF$ of size $2^k$ elements takes less than 1ms, it can be represented using only 16kb.
 It can be shown that this if we had a perfect estimation we wound send only up $1.13$ bytes times the minimum instead of $1.26$.
 
 \subsection{Strata Estimator}
@@ -247,20 +249,18 @@ for k in 10..21 { // can be written as one round trip for every iteration
 \item Estimating number of edges that differ (step 1) can be skipped to simplify the code. We can always start with k = 10 at cost of adding extra round trips in case of doing full sync.
 \item The algorithm can be rewritten to reduce the number of our trips. Each iteration of loop can be made into a half of a round trip.
 Details can be left as an exercise to the reader.
-\item Make algorithm adversarial resilient. 
+\item Make algorithm adversarial resilient.
 \end{enumerate}
 
 
 \section{Performance results}
-TODO
-\subsection{adding $1000000$ edges to IBF with size of $2^{21}$}
-19ms
-\subsection{decoding IBF of size $2^{14}$ with 10000 edges recovered}
-7ms
-\subsection{decoding IBF of size $2^{18}$ with 100000 edges recovered}
-70ms
-\subsection{decoding IBF of size $2^{21}$ with 1000000 edges recovered}
-150ms
+
+\begin{tabular}{ | l | l | l | l |}
+    \hline
+    Algorithm & 10000 & 100000 & 1000000 \\ \hline
+    Adding edges to IBF & & & 19 ms \\
+    IBF without mitigations & 0.7ms & 7ms & 150ms  \\   \hline
+    \end{tabular}
 
 \section{Adversarial-resilient mitiration}\label{sec:mitigation}
 TODO
