@@ -130,14 +130,19 @@ It can be be shown that there can be $\binom{w}{4}$ such IBFs generated.
 In order to cause a boxes colision $\binom{w}{4}$ malicious edges would have to be generated.
 
 \end{itemize}
+Using approach above generates one of $\binom{w}{4}$ unique IBFs to decrease chances of adversarial attack.
+
+Before doing each exchange, we can choose a set of bits of hashes, which we are going to send.
 
 \section{Precomputed datastructure}
 In order to exchange \textbf{routing graphs} we would like to do work proportional to the size of data exchanged.
 Therefore, we need to precompute IBFs, otherwise we would need to do it before every exchange, which would require going through every edge at least once.
 \subsection{List of IBFs for powers of 2}  \label{first_precomputed}
+Assuming the total number of edges is lesser than $10$ million, we only need to compute $IBF$ with sizes up to $2^{20}$.
+Assume we decide to do a full exchange if the difference is bigger than $10$ percent.
+
 We precompute list of IBFs of size $2^k$ for $k \in [10..20]$, and $h = 3$, where $h$ is the number of boxes to which we insert every element.
 Each element needs to be inserted $11$ times. Assuming item size of $8$ bytes, and hash size of $8$ bytes, each box would take 16 bytes.
-
 
 \subsection{List of IBFs for powers of 2 for every connection}
 Assuming node has up to 40 connection, insertion time and storage required would be 40 times bigger than Section~\ref{first_precomputed}.
@@ -164,7 +169,7 @@ Let's assume each element is insert into 4 boxes.
 \end{tabular}
 
 
-\subsection{Adversarial-resilient Inverse Bloom Filter with randomization}
+\subsection{Size of precomputed data structure}
 
 \begin{tabular}{ | l | l | }
     \hline
@@ -172,11 +177,22 @@ Let's assume each element is insert into 4 boxes.
     Size of  $360 * k  = 360 * 2^{22} = 360 * 8388608$ edges & 1440 MiB \\
     Size of  $360 * k  = 360 * 2^{23} = 360 * 8388608$ edges & 2880 MiB \\
     IBFs for $k \in 2..20$ for 8b elements + 8b hashes & 32 MiB \\
+    IBFs for $k \in 2..20$ for 64b elements + 8b hashes & 144 MiB \\
     IBFs for $k \in 2..20$ for 8b elements + 8b hashes, stored for every connection & 1280 MiB  \\
     IBFs for $k \in 2..20$ for 64b elements + 32b hashes, 32 versions & 2176MiB  \\
     IBFs for $k \in 2..20$ for 32b elements + 16b hashes, 16 versions & 576 MiB  \\ \hline
 \end{tabular}
 
+\subsection{Size of exchange for $k = 20$}
+\begin{tabular}{ | l | l | }
+    \hline
+    Algorithm & size \\ \hline
+    IBFs of size $2^{20}$ for 8b elements + 8b hashes & 16 MiB \\
+    IBFs of size $2^{20}$  for 64b elements + 8b hashes & 72 MiB \\
+    IBFs of size $2^{20}$  for 8b elements + 8b hashes, stored for every connection & 16 MiB  \\
+    IBFs of size $2^{20}$  for 64b elements + 32b hashes, 32 versions (assuming we send 8 bytes hashes) & 40 MiB  \\
+    IBFs of size $2^{20}$  for 32b elements + 16b hashes, 16 versions (assuming we send 8 bytes hashes) & 72 MiB  \\ \hline
+\end{tabular}
 
 \section{Algorithm overview}
 There are many ways in which synchronization of \textbf{routing graphs} can be done.
