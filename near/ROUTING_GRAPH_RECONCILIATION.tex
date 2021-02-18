@@ -104,7 +104,7 @@ Each has following structure:
 Bloom filters in general are not resilient to adversarial types of attack.
 There are existing publications describing how to make an bloom filter resistant to adversarial attacks \cite{adversarial}.
 
-\subsection{Adversarial-resilient Inverse Bloom Filter for P2P networks}
+\subsection{Adversarial-resilient Inverse Bloom Filter with randomization}
 \subsubsection{Types of attacks}
 If each peer uses generates IBF in the same way, using the same hash function.
 It's possible for one of the following attacks to be used:
@@ -134,16 +134,54 @@ In order to cause a boxes colision $\binom{w}{4}$ malicious edges would have to 
 \section{Precomputed datastructure}
 In order to exchange \textbf{routing graphs} we would like to do work proportional to the size of data exchanged.
 Therefore, we need to precompute IBFs, otherwise we would need to do it before every exchange, which would require going through every edge at least once.
-\subsection{List of IBFs for powers of 2}
-We precompute list of IBFs of size $2^k$ for $k \in [2..20]$, and $h = 3$, where $h$ is the number of boxes where we insert every element.
-\subsubsection{Insertion time complexity}
-Inserting/deleting an element requires doing work $k$ times, once for every
+\subsection{List of IBFs for powers of 2}  \label{first_precomputed}
+We precompute list of IBFs of size $2^k$ for $k \in [10..20]$, and $h = 3$, where $h$ is the number of boxes to which we insert every element.
+Each element needs to be inserted $11$ times. Assuming item size of $8$ bytes, and hash size of $8$ bytes, each box would take 16 bytes.
+
+
+\subsection{List of IBFs for powers of 2 for every connection}
+Assuming node has up to 40 connection, insertion time and storage required would be 40 times bigger than Section~\ref{first_precomputed}.
+
+\subsection{Randomized IBF with 64 bytes items, 32 versions, 32 bytes hashes}
+We can generate randomize IBfs, by storing 32 version of IBFs with having each element inserted exactly once to each IBF at district positions.
+That would require storage space of $(2^{21} * (64 + 32 * 32) = 2176 MiB$.
+
+\subsection{Randomized IBF with 32 bytes items, 16 versions, 16 bytes hashes}
+We can generate randomize IBfs, by storing 32 version of IBFs with having each element inserted exactly once to each IBF at district positions.
+That would require storage space of $(2^{21} * (32 +16 * 16) = 576 MiB$.
+
+
+\subsection{Number of insertions}
+Let's assume each element is insert into 4 boxes.
+
+\begin{tabular}{ | l | l | }
+    \hline
+    Algorithm & insertions \\ \hline
+    IBFs for $k \in 10..20$ for 8b elements + 8b hashes & 44  \\
+    IBFs for $k \in 10..20$ for 8b elements + 8b hashes, stored for every connection & 1760  \\
+    IBFs for $k \in 10..20$ for 64b elements + 32b hashes, 32 versions & 352 \\
+    IBFs for $k \in 10..20$ for 32b elements + 16b hashes, 16 versions & 176 \\ \hline
+\end{tabular}
+
+
+\subsection{Adversarial-resilient Inverse Bloom Filter with randomization}
+
+\begin{tabular}{ | l | l | }
+    \hline
+    Algorithm & size \\ \hline
+    Size of  $360 * k  = 360 * 2^{22} = 360 * 8388608$ edges & 1440 MiB \\
+    Size of  $360 * k  = 360 * 2^{23} = 360 * 8388608$ edges & 2880 MiB \\
+    IBFs for $k \in 2..20$ for 8b elements + 8b hashes & 32 MiB \\
+    IBFs for $k \in 2..20$ for 8b elements + 8b hashes, stored for every connection & 1280 MiB  \\
+    IBFs for $k \in 2..20$ for 64b elements + 32b hashes, 32 versions & 2176MiB  \\
+    IBFs for $k \in 2..20$ for 32b elements + 16b hashes, 16 versions & 576 MiB  \\ \hline
+\end{tabular}
 
 
 \section{Algorithm overview}
 There are many ways in which synchronization of \textbf{routing graphs} can be done.
 We have to consider a few factors: number of bytes send, number of round trips, computation time, total time.
-Later I'll discuss each variant, it's strong and weak points, and one which one I think we should use.
+Later we will discuss each variant, it's strong and weak points, and one which one I think we should use.
 In general the algorithm I'm proposing in as follows:
 \begin{enumerate}
   \item Use a probabilistic approach to estimate the number of edges that differ.
@@ -288,7 +326,7 @@ Details can be left as an exercise to the reader.
     IBF without mitigations & 0.7ms & 7ms & 150ms  \\   \hline
     Adding edges to IBF with mitigations & TODO & TODO & TODO \\
     IBF with mitigations & TODO & TODO & TODO \\ \hline
-    \end{tabular}
+\end{tabular}
 
 \section{Adversarial-resilient mitiration}\label{sec:mitigation}
 TODO
