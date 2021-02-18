@@ -1,5 +1,5 @@
 \documentclass[11pt]{article}
-    \title{\textbf{Adversarial-resilient  Routing Graph Reconcilation for P2P networks 0.0.3}}
+    \title{\textbf{Adversarial-resilient  Routing Graph Reconciliation for P2P networks 0.0.3}}
     \author{Piotr Mikulski}
     \date{}
 \oddsidemargin=-0.2in
@@ -25,20 +25,23 @@ For the sake of simplicity we will describe only the process of adding new edges
 The process of adding/removing edges is described in [quotation needed].
 
 The process of exchanging full \textbf{routing graphs} on every reconnect would be expensive and we would like to avoid it.
-Ideally we would exhange the amount of information / spend computing power proportional to the symetrical difference of views of \textbf{routing tables} hold by each peer.
+Ideally we would exhange the amount of information / spend computing power proportional to the symmetrical difference of views of \textbf{routing tables} hold by each peer.
 
-In this article, we will discuss practical ways of implementing \textbf{Routing Graph Reconcilation} algorithm for a P2P network by using a logarithic number of precomputed Invertible Bloom Filters (IBF)
+In this article, we will discuss practical ways of implementing \textbf{Routing Graph Reconciliation} algorithm for a P2P network by using a logarithmic number of precomputed Invertible Bloom Filters (IBF)
  \cite{esrwpc}.
-There are existing publications describing how to make an bloom filter resiliant to adversarial attacks \cite{adversarial}.
-We will describe on how to make IBF resiliant to such attacks.
+There are existing publications describing how to make an bloom filter resilient to adversarial attacks \cite{adversarial}.
+We will describe on how to make IBF resilient to such attacks.
 
 \section{Assumptions about the network}
 In order to provide an accurate estimate of the solution, we will make following assumptions based on current state of NEAR Protocol \cite{near}:
 \begin{itemize}
 \item Each edge is represented by a vector of 360 bytes. (public keys of both peers each plus signatures)
 \item It takes 2ms to verify an edge.
-\item Total number of edges in the graph won't be much bigger than 1 milion.  If it was 10 million, we would be using 3.6gb of data for representing the routing table alone. It would take 5.5h for a peer to verify all egdes using a single thread.
-\item Each peer has it's own view of \textbf{routing graph}. Each peer may connect to many other peers, reconnect frequently, we would like to minimize the amount of work traffic done in case in optimistic case, no or very little work needs to be done.
+\item Total number of edges in the graph won't be much bigger than 1 million.
+If it was 10 million, we would be using 3.6gb of data for representing the routing table alone.
+It would take 5.5h for a peer to verify all egdes using a single thread.
+\item Each peer has it's own view of \textbf{routing graph}.
+Each peer may connect to many other peers, reconnect frequently, we would like to minimize the amount of work traffic done in case in optimistic case, no or very little work needs to be done.
 
 \end{itemize}
 
@@ -76,15 +79,18 @@ Bloom filter is a space-efficient probabilistic data structure introduced by Bur
 It is used to test whenever an element is in the set.
 \subsection{Inverse Bloom Filter (IBF)}
 Invertible Bloom Filter (IBF) is a type of bloom filter, which can be used to simultaneously calculate  $D_{A-B}$ and $D_{B-A}$ using $O(d)$ space.
-This data structure encodes sets in such a way that given two encodings  of two different sets, you can recover symetric difference of those two sets.
+This data structure encodes sets in such a way that given two encodings  of two different sets, you can recover symmetric difference of those two sets.
 Detailed analysis can be found at ESRwPC \cite{esrwpc}.
 \subsubsection{Properties}
 \begin{itemize}
-\item Two IBFs structures can be added/substacted from each other creating a new structure representing sum/difference of sets.
+\item Two IBFs structures can be added/subtracted from each other creating a new structure representing sum/difference of sets.
 \item It can be shown that given two IBF structures of size $g$, you can recover with high probability up to $(2/3)*g$ elements if $g$ big enough. (above 1000)  \cite{esrwpc}
-\item IBF is a propabilisting approach is can fail, we have to that into account. For example by sending IBF encoded with different hash function or bigger size.
-\item decoding can lead to partial result. We can recover some edges even during failure.
-\item IBF of size $2^k$ consists of $2^k$ boxes. Each has following structure:
+\item IBF is a probabilistic approach is can fail, we have to that into account.
+For example by sending IBF encoded with different hash function or bigger size.
+\item decoding can lead to partial result.
+We can recover some edges even during failure.
+\item IBF of size $2^k$ consists of $2^k$ boxes.
+Each has following structure:
 \begin{itemize}
 \item xor of elements stored -  let's done it's size as $s_i$
 \item xor of hashes of elements stores - let's denote it's size as $h_i$
@@ -95,34 +101,44 @@ Detailed analysis can be found at ESRwPC \cite{esrwpc}.
 
 
 \subsection{Adversarial-resilient Bloom filter}
-Bloom filters in general are not resistent to adversarial types of attack.
-There are existing publications describing how to make an bloom filter resiliant to adversarial attacks \cite{adversarial}.
+Bloom filters in general are not resilient to adversarial types of attack.
+There are existing publications describing how to make an bloom filter resistant to adversarial attacks \cite{adversarial}.
 
 \subsection{Adversarial-resilient Inverse Bloom Filter for P2P networks}
 \subsubsection{Types of attacks}
-If each peer uses gnerates IBF in the same way, using the same hash function.
+If each peer uses generates IBF in the same way, using the same hash function.
 It's possible for one of the following attacks to be used:
 \begin{enumerate}
-\item Hash colision of items stores in IBF -  Instead of storing whole edges directly in IBF, we can store hashes of those elements.
+\item Hash collision of items stores in IBF -  Instead of storing whole edges directly in IBF, we can store hashes of those elements.
 If hashes aren't long enough, this allow adversarial peer to create a hash collision.
 \item Set of boxes collision - Each element is added to a fixed number of boxes, it's possible to generate an edge, which gets hashed to the same set of boxes, preventing decoding of the items in that box.
-\item Signature collison - If multiple items are stores inside one box and signatures are short enough it's possible to generate such signature, where hash of items stored in box would be equal to xor of hashes of that boxes. That would cause a false positive.
+\item Signature collision - If multiple items are stores inside one box and signatures are short enough it's possible to generate such signature, where hash of items stored in box would be equal to xor of hashes of that boxes.
+That would cause a false positive.
 \end{enumerate}
 \subsubsection{Approach 1 - Generate a separate IBF for each edge.}
 We can generate a separate IBF for each edge.
 This would add extra memory usage proportional to each connection created, and also require to compute/update such data structure for each connection.
 \subsubsection{Approach 2 - introduce randomization}
-We keep one data structure in memory representing set, but it would require extra computation time, and memory.
 \begin{itemize}
 \item To protect against attacks 1) we can increase size of item, to be large enough, what would make generating hash collisions unlikely
 \item To protect against attacks 3) we can geneate longer signatures that can be generated, by computing $g$ different hash functions.
 In order not to increase network bandwith, we choose random set of bits of such signature of sufficient size, which we send though the network.
-\item Let's generate such set of functions $h_0, h_1, ..., h_{w_1}$ such that for every $i != j$ the following holds true $h_i(item) != h_j(item)$.
+\item Let's generate such set of functions $h_0, h_1, \ldots, h_{w_1}$ such that for every $i != j$ the following holds true $h_i(item) != h_j(item)$.
 We can generate $w$ independent $IBF_i$ structures, such that each $item$ is inserted once to $IBF_i$ at position $h_i$.
 Let's generate a  $IBF$, such that $IBF = IBF_i + IBF_j + IBF_k + IBF_l$ for 4 different $i,j,k,l$.
-It can be be shown that there can be $\binom{w}{4}$ such IBFs generated. In order to cause a boxes colision $\binom{w}{4}$ malicious edges would have to be generated.
+It can be be shown that there can be $\binom{w}{4}$ such IBFs generated.
+In order to cause a boxes colision $\binom{w}{4}$ malicious edges would have to be generated.
 
 \end{itemize}
+
+\section{Precomputed datastructure}
+In order to exchange \textbf{routing graphs} we would like to do work proportional to the size of data exchanged.
+Therefore, we need to precompute IBFs, otherwise we would need to do it before every exchange, which would require going through every edge at least once.
+\subsection{List of IBFs for powers of 2}
+We precompute list of IBFs of size $2^k$ for $k \in [2..20]$, and $h = 3$, where $h$ is the number of boxes where we insert every element.
+\subsubsection{Insertion time complexity}
+Inserting/deleting an element requires doing work $k$ times, once for every
+
 
 \section{Algorithm overview}
 There are many ways in which synchronization of \textbf{routing graphs} can be done.
@@ -130,7 +146,8 @@ We have to consider a few factors: number of bytes send, number of round trips, 
 Later I'll discuss each variant, it's strong and weak points, and one which one I think we should use.
 In general the algorithm I'm proposing in as follows:
 \begin{enumerate}
-  \item Use a probabilisting approach to estimate the number of edges that differ. Let call it $d_e$ . (details in section~\ref{sec:estimate})
+  \item Use a probabilistic approach to estimate the number of edges that differ.
+  Let call it $d_e$ . (details in section~\ref{sec:estimate})
   \item Choose $k$ such that IBF with $2^k$ elements would be enough to decode $d_e$ elements.
   \item If sending computing/sending/decoding IBF of size $2^k$ is more expensive than sending all elements, send all elements and exit
   \item Otherwise send IBF of size $2^k$ if fully successful exit, otherwise increase $k$ by 1, and go back to step 3.
@@ -144,10 +161,15 @@ Assuming we start with $k=0$, it can be proven that total number of IBF buckets 
 Therefore the total number of bytes won't be bigger than $6(s_e+s_h)*d$ plus metadata, $s_h$ is the size of hash.
 So the total number of bytes sent won't be bigger than $6.13b_o$.
 \subsection{Improvement}
-We can improve the algorithm above. We know that each edge takes 360 bytes. Sending edges directly can be expensive. Instead for each edge $e$ we can compute for example 8 bytes hash $h_e$.
-Instead of computing set of missing edges, we can compute set of hashes of missing edges. Given list of hashes of edges that differ, we can then send list of edges that differ.
-It can be shown that the total bytes send won't be higher than $6(s_h+s_h)*d + s_e * d = (96+s_e)*d$ (TODO Proof 2). So the solution is at most $1.26$ times worse than minimum.
-Using hashes could introduce potencial vurnelabilities, explanation on mitagion can be found in section~\ref{sec:mitigation}.
+We can improve the algorithm above.
+We know that each edge takes 360 bytes.
+Sending edges directly can be expensive.
+Instead for each edge $e$ we can compute for example 8 bytes hash $h_e$.
+Instead of computing set of missing edges, we can compute set of hashes of missing edges.
+Given list of hashes of edges that differ, we can then send list of edges that differ.
+It can be shown that the total bytes send won't be higher than $6(s_h+s_h)*d + s_e * d = (96+s_e)*d$ (TODO Proof 2).
+So the solution is at most $1.26$ times worse than minimum.
+Using hashes could introduce potential vulnerabilities, explanation on mitigation can be found in section~\ref{sec:mitigation}.
 
 \subsection{Analysis of using Adversarial-resilient approach}
 TODO
@@ -156,27 +178,31 @@ TODO
 A few variants of estimating set differences are possible.
 \subsection{Don't do estimation}
 It's a simple and preferred approach.
-We can start with $k = 10$. It's fine to do so, because decoding $IBF$ of size $2^k$ elements takes less than 1ms, it can be represented using only 16kb.
+We can start with $k = 10$.
+It's fine to do so, because decoding $IBF$ of size $2^k$ elements takes less than 1ms, it can be represented using only 16kb.
 It can be shown that this if we had a perfect estimation we wound send only up $1.13$ bytes times the minimum instead of $1.26$.
 
 \subsection{Strata Estimator}
 Defined in \cite{esrwpc}.
-This is a probabilistic estimator. If every node keeps the same Strate Estimator generated with the same hash function then it's possible to for malicious actor to generate one edge such that would cause Stata Estimator to overestimate the difference. This would cause full graph to be sent.
+This is a probabilistic estimator.
+If every node keeps the same Strate Estimator generated with the same hash function then it's possible to for malicious actor to generate one edge such that would cause Stata Estimator to overestimate the difference. This would cause full graph to be sent.
 
 This could be mitigated for example by keeping a Stata Estimator computed with different hash for each connection, but this would require to use more memory.
 You would need to recompute this structure on each connection.
-Further reasearch is needed if that can be avoided. Though there are better solutions.
+Further reasearch is needed if that can be avoided.
+Though there are better solutions.
 \subsection{Send hashes of random $m$ edges}
 Let's say we have Alice and Bob.
-They send to each other random $m$ hashes  of edges choosen with uniform distribution.
+They send to each other random $m$ hashes of edges chosen with uniform distribution.
 They record the number of those edges that the other side doesn't have.
 Let's choose $m$ to be $2000$.
-Assuming the worst case where $e = 1000000$. We would get information about random sample of $0.05$ percent of edges.
+Assuming the worst case where $e = 1000000$.
+We would get information about random sample of $0.05$ percent of edges.
 This would allow us to accurately estimate the difference as long as the $d > 1000$.
 However, if $d < 1000$ then we could send start with $k = 11$ and send IBF with $2^k$ elements.
 Sending $IBF$ with $k <= 11$ takes less than 1 ms, and its not expensive.
 
-\section{Routing Graph Reconcilation Algorithm}
+\section{Routing Graph Reconciliation Algorithm}
 Let's assume Alice and Bobs are peers trying to exchange their routing tables.
 \begin{lstlisting}[language=Rust]
 
@@ -258,8 +284,10 @@ Details can be left as an exercise to the reader.
 \begin{tabular}{ | l | l | l | l |}
     \hline
     Algorithm & 10000 & 100000 & 1000000 \\ \hline
-    Adding edges to IBF & & & 19 ms \\
+    Adding edges to IBF & TODO & TODO & 19 ms \\
     IBF without mitigations & 0.7ms & 7ms & 150ms  \\   \hline
+    Adding edges to IBF with mitigations & TODO & TODO & TODO \\
+    IBF with mitigations & TODO & TODO & TODO \\ \hline
     \end{tabular}
 
 \section{Adversarial-resilient mitiration}\label{sec:mitigation}
