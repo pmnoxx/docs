@@ -183,7 +183,7 @@ Let's assume each element is insert into 4 boxes.
     IBFs for $k \in 2..20$ for 32b elements + 16b hashes, 16 versions & 576 MiB  \\ \hline
 \end{tabular}
 
-\subsection{Size of exchange for $k = 20$}
+\subsection{Size of exchange }
 \begin{tabular}{ | l | l | }
     \hline
     Algorithm & size \\ \hline
@@ -192,6 +192,13 @@ Let's assume each element is insert into 4 boxes.
     IBFs of size $2^{20}$  for 8b elements + 8b hashes, stored for every connection & 16 MiB  \\
     IBFs of size $2^{20}$  for 64b elements + 32b hashes, 32 versions (assuming we send 8 bytes hashes) & 40 MiB  \\
     IBFs of size $2^{20}$  for 32b elements + 16b hashes, 16 versions (assuming we send 8 bytes hashes) & 72 MiB  \\ \hline
+
+
+    IBFs of size $2^{10}$ for 8b elements + 8b hashes & 16 KiB \\
+    IBFs of size $2^{10}$  for 64b elements + 8b hashes & 72 KiB \\
+    IBFs of size $2^{10}$  for 8b elements + 8b hashes, stored for every connection & 16 KiB  \\
+    IBFs of size $2^{10}$  for 64b elements + 32b hashes, 32 versions (assuming we send 8 bytes hashes) & 40 KiB  \\
+    IBFs of size $2^{10}$  for 32b elements + 16b hashes, 16 versions (assuming we send 8 bytes hashes) & 72 KiB  \\ \hline
 \end{tabular}
 
 \section{Algorithm overview}
